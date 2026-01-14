@@ -234,6 +234,7 @@ void clearMathStack(MathStack *stack);
 void initStack(Stack *stack);
 void initArrayStack(ArrayStack *stack);
 void initMathStack(MathStack *stack);
+void freeStack(Stack *stack);
 
 void pushStackToFlow(Stack *stack, Stack *currStack);
 void push(Stack *stack, AssemblyInstruction instruction);
@@ -242,4 +243,3 @@ void pushMathExpression(MathStack *stack, MathStackInside data);
 void pushMathExpressionP(MathStack *stack, MathStackInside *data);
 
 #endif
-

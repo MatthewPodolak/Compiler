@@ -4,6 +4,7 @@
 #include "semantic_analizer.h"
 #include "uthash.h"
 #include "assembly_generator.h"
+#include "memory_manager.h"
 
 Flow *flowTable = NULL;
 
@@ -31,36 +32,30 @@ int currentMathQue = 0;
 // ----- HELPERS ----- //
 const char *generateForLoopName(){
 	int size = snprintf(NULL, 0, "ForLoop%d", privatesCounter) + 1;
-	char *tempName = malloc(size);
+	char *tempName = mem_alloc(size);
 	snprintf(tempName, size, "ForLoop%d", privatesCounter);
-	const char *fixedName = tempName;
-	return fixedName;
+	return tempName;
 }
 
 const char *generateNormalizedPrivateName(const char *name){
 	int size = snprintf(NULL, 0, "%s%d",name ,privatesCounter) + 1;
-	char *tempName = malloc(size);
+	char *tempName = mem_alloc(size);
 	snprintf(tempName, size, "%s%d",name ,privatesCounter);
-	const char *fixedName = tempName;
-	return fixedName;
+	return tempName;
 }
 
 const char *generateLoopName(){
-
 	int size = snprintf(NULL, 0, "ifstatement%d", privatesCounter) + 1;
-	char *tempName = malloc(size);
+	char *tempName = mem_alloc(size);
 	snprintf(tempName, size, "ifstatement%d", privatesCounter);
-	const char *fixedName = tempName;
-	return fixedName;
-
+	return tempName;
 }
 
 const char *generateFlowName(){
 	int size = snprintf(NULL, 0, "_Start%d", currentFlow) + 1;
-	char *tempName = malloc(size);
+	char *tempName = mem_alloc(size);
 	snprintf(tempName, size, "_Start%d", currentFlow);
-	const char *fixedName = tempName;
-	return fixedName;
+	return tempName;
 }
 
 void normalizeString(char *str) {
@@ -156,7 +151,7 @@ void initFlow(Flow **flowTable){
     push(stack, instruction);
     
     f->stack = stack;
-    HASH_ADD_INT(*flowTable, id, f);  // Use id for hashing
+    HASH_ADD_INT(*flowTable, id, f);
 }
 
 void initNewFlow(Flow **flowTable) {
@@ -245,29 +240,28 @@ const char *initializePrint(const char *value){
 	Variable *v = (Variable *)malloc(sizeof(Variable));
 	
 	int size = snprintf(NULL, 0, "printVar%d", printCounter + 1) + 1;
-	char *tempName = malloc(size);
+	char *tempName = mem_alloc(size);
 	snprintf(tempName, size, "printVar%d", printCounter + 1);
-	const char *name = tempName;
 	
-	v->name = strdup(name);
-	storage.stringValue = strdup(value);
+	v->name = tempName;
+	storage.stringValue = mem_strdup(value);
 	v->type = stringValue;
 	
 	v->valuestorage = storage;
     HASH_ADD_KEYPTR(hh, printTable, v->name, strlen(v->name), v);
     printCounter++;
     
-    return name;
+    return tempName;
 }
 
 void initializeArray(const char *name, ArrayType arraytype, int arraySize) {
     ArrayVariable *va = (ArrayVariable *)malloc(sizeof(ArrayVariable));
     Variable *v = (Variable *)malloc(sizeof(Variable));
 
-    v->name = strdup(name);
+    v->name = mem_strdup(name);
     v->type = tableValue;
 
-    va->name = strdup(name);
+    va->name = mem_strdup(name);
 
     ArrayValue storage;
 
@@ -321,10 +315,10 @@ int initializeArrayWithValues(ArrayStack *stack, const char *name, VarType array
     ArrayVariable *va = (ArrayVariable *)malloc(sizeof(ArrayVariable));
     Variable *v = (Variable *)malloc(sizeof(Variable));
     
-    v->name = strdup(name);
+    v->name = mem_strdup(name);
     v->type = tableValue;
     
-    va->name = strdup(name);
+    va->name = mem_strdup(name);
 	va->arraySize = arraySize;
 	
     ArrayValue storage;
@@ -392,12 +386,11 @@ const char* initializeTemp(VarType type, Value value){
 	Variable *v = (Variable *)malloc(sizeof(Variable));
 	
 	int size = snprintf(NULL, 0, "temporary%d", tempCounter + 1) + 1;
-	char *tempName = malloc(size);
+	char *tempName = mem_alloc(size);
 	snprintf(tempName, size, "temporary%d", tempCounter + 1);
-	const char *name = tempName;
 
 	
-	v->name = strdup(name);
+	v->name = tempName;
 	
 	if(type == doubleValue){
 	    storage.doubleValue = value.doubleValue;
@@ -405,7 +398,7 @@ const char* initializeTemp(VarType type, Value value){
 	}
 	
 	if(type == stringValue){
-		storage.stringValue = strdup(value.stringValue);
+		storage.stringValue = mem_strdup(value.stringValue);
 	    v->type = stringValue;
 	}
 	
@@ -418,21 +411,20 @@ const char* initializeTemp(VarType type, Value value){
     HASH_ADD_KEYPTR(hh, tempTable, v->name, strlen(v->name), v);
     tempCounter++;
     
-    return name;
+    return tempName;
 }
 
 void initializePrivatesVar(const char *name, VarType type, Value value){
 	PrivateVariable *v = (PrivateVariable *)malloc(sizeof(PrivateVariable));
-	v->name = strdup(name);
+	v->name = mem_strdup(name);
 	v->type = type;
 	v->valuestorage = value;
 	v->id = privatesCounter;
 	
 	int size = snprintf(NULL, 0, "%s%d",name ,privatesCounter) + 1;
-	char *tempName = malloc(size);
+	char *tempName = mem_alloc(size);
 	snprintf(tempName, size, "%s%d",name ,privatesCounter);
-	const char *fixedName = tempName;
-	v->acessName = strdup(fixedName);	
+	v->acessName = tempName;
 	
 	HASH_ADD_KEYPTR(hh, privateVarsTable, v->acessName, strlen(v->acessName), v);
 }
@@ -442,7 +434,7 @@ void initializeInteger(const char *name, int value) {
     storage.integerValue = value;
 
     Variable *v = (Variable *)malloc(sizeof(Variable));
-    v->name = strdup(name);
+    v->name = mem_strdup(name);
     v->type = integerValue;
     v->valuestorage = storage;
     HASH_ADD_KEYPTR(hh, variableTable, v->name, strlen(v->name), v);
@@ -451,10 +443,10 @@ void initializeInteger(const char *name, int value) {
 
 void initializeString(const char *name, const char *value){
     Value storage;
-    storage.stringValue = strdup(value);
+    storage.stringValue = mem_strdup(value);
 
     Variable *v = (Variable *)malloc(sizeof(Variable));
-    v->name = strdup(name);
+    v->name = mem_strdup(name);
     v->type = stringValue;
     v->valuestorage = storage;
     HASH_ADD_KEYPTR(hh, variableTable, v->name, strlen(v->name),v);
@@ -466,7 +458,7 @@ void initializeDouble(const char *name, double value){
     storage.doubleValue = value;
 
     Variable *v = (Variable *)malloc(sizeof(Variable));
-    v->name = strdup(name);
+    v->name = mem_strdup(name);
     v->type = doubleValue;
     v->valuestorage = storage;
     HASH_ADD_KEYPTR(hh, variableTable, v->name, strlen(v->name),v);
@@ -509,6 +501,8 @@ Stack *computeMathStack(MathStack *stack){
     }else{
         tempStack = performHigherMath(stack);
         Stack *chuj = computeMathStack(tempStack);
+        freeStack(chuj);
+        clearMathStack(tempStack);
     }      
     
     return asmstack;
@@ -516,9 +510,9 @@ Stack *computeMathStack(MathStack *stack){
 
 MathStack *performHigherMath(MathStack *stack) {
     MathStackNode *current = stack->top;
-    MathStack *computedMathStack = malloc(sizeof(MathStack));
-    Stack *stackOperations = malloc(sizeof(Stack));
-    MathStack *revStack = malloc(sizeof(MathStack));
+    MathStack *computedMathStack = mem_alloc(sizeof(MathStack));
+    Stack *stackOperations = mem_alloc(sizeof(Stack));
+    MathStack *revStack = mem_alloc(sizeof(MathStack));
     
     initMathStack(revStack);
     initStack(stackOperations);
@@ -546,12 +540,14 @@ MathStack *performHigherMath(MathStack *stack) {
         currentNew = currentNew->next;
     }
     
+    clearMathStack(computedMathStack);
+    
     return revStack;
 }
 
 MathStackInside *computeHigherMathStatement(Stack *stackOperations,MathStackInside first, MathStackInside second){
     AssemblyInstruction instruction;
-    MathStackInside *newInside = malloc(sizeof(MathStackInside));
+    MathStackInside *newInside = mem_alloc(sizeof(MathStackInside));
     
     int savingQue;
     int prevQue;
@@ -697,13 +693,13 @@ int checkStatementsForMathComputing(MathStack *stack){
 
 
 void addInitialsToMathStack(MathStack *stack, const char *name, ExpressionType type){
-    MathStackInside *msi = (MathStackInside *)malloc(sizeof(MathStackInside));
+    MathStackInside msi;
     
-    msi->type = type;
-    msi->varName = name;
-    msi->isAlrdComputed = 0;
+    msi.type = type;
+    msi.varName = name;
+    msi.isAlrdComputed = 0;
     
-    pushMathExpression(stack, *msi);
+    pushMathExpression(stack, msi);
 }
 
 // END OF MATH //
@@ -761,7 +757,7 @@ void initNewForLoop(const char *initialVarName, int value){
 void createIfStatement(const char *loopName){
     HighStatementIf *hs = (HighStatementIf *)malloc(sizeof(HighStatementIf));
     hs->id = privatesCounter;
-    hs->name = strdup(loopName);
+    hs->name = mem_strdup(loopName);
     hs->returnFlow = currentFlow;
     hs->floor = floorNum;
     
@@ -797,6 +793,17 @@ void initMathStack(MathStack *stack){
     stack->top = NULL;
 }
 
+void freeStack(Stack *stack) {
+    if (stack == NULL) return;
+    StackNode *current = stack->top;
+    while (current != NULL) {
+        StackNode *next = current->next;
+        free(current);
+        current = next;
+    }
+    free(stack);
+}
+
 void initArrayStack(ArrayStack *stack){
 	stack->top = NULL;
 }
@@ -830,3 +837,104 @@ void push(Stack *stack, AssemblyInstruction instruction) {
 }
 
 //---- END ---- //
+
+// ---- CLEANUP FUNCTIONS ---- //
+
+static void free_stack_nodes(Stack *stack) {
+    if (stack == NULL) return;
+    StackNode *current = stack->top;
+    while (current != NULL) {
+        StackNode *next = current->next;
+        free(current);
+        current = next;
+    }
+    stack->top = NULL;
+}
+
+void cleanup_variable_table(void) {
+    while (variableTable != NULL) {
+        Variable *v = variableTable;
+        HASH_DEL(variableTable, v);
+        free(v);
+    }
+}
+
+void cleanup_array_table(void) {
+    while (arrayTable != NULL) {
+        ArrayVariable *av = arrayTable;
+        HASH_DEL(arrayTable, av);
+        switch(av->arrayType) {
+            case integerArray:
+                free(av->arrayValue.integerArray);
+                break;
+            case doubleArray:
+                free(av->arrayValue.doubleArray);
+                break;
+            case stringArray:
+                free(av->arrayValue.stringArray);
+                break;
+            default:
+                break;
+        }
+        free(av);
+    }
+}
+
+void cleanup_temp_table(void) {
+    while (tempTable != NULL) {
+        Variable *v = tempTable;
+        HASH_DEL(tempTable, v);
+        free(v);
+    }
+}
+
+void cleanup_print_table(void) {
+    while (printTable != NULL) {
+        Variable *v = printTable;
+        HASH_DEL(printTable, v);
+        free(v);
+    }
+}
+
+void cleanup_private_vars_table(void) {
+    while (privateVarsTable != NULL) {
+        PrivateVariable *pv = privateVarsTable;
+        HASH_DEL(privateVarsTable, pv);
+        free(pv);
+    }
+}
+
+void cleanup_high_statement_table(void) {
+    while (highStatementIfTable != NULL) {
+        HighStatementIf *hs = highStatementIfTable;
+        HASH_DEL(highStatementIfTable, hs);
+        free_stack_nodes(hs->stack);
+        free(hs->stack);
+        free_stack_nodes(hs->contstack);
+        free(hs->contstack);
+        free(hs);
+    }
+}
+
+void cleanup_for_statement_table(void) {
+    while (forStatementTable != NULL) {
+        ForStatement *fs = forStatementTable;
+        HASH_DEL(forStatementTable, fs);
+        free_stack_nodes(fs->stack);
+        free(fs->stack);
+        free(fs);
+    }
+}
+
+void cleanup_flow_table(void) {
+    while (flowTable != NULL) {
+        Flow *f = flowTable;
+        HASH_DEL(flowTable, f);
+        free_stack_nodes(f->stack);
+        free(f->stack);
+        free(f);
+    }
+    flowTable = NULL;
+}
+
+// ---- END CLEANUP ---- //
