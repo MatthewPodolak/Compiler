@@ -1,26 +1,17 @@
-# Compiler
-
-Flex and bison compiler
-### 1. <a >How to run</a>
-### 2. <a>Syntax</a>
-### 3. <a>Flow</a>
-### 4. <a>Assembly file</a>
+<div align="center">
+  Rather than rewriting the entire codebase to implement proper per-object lifecycle management, I opted for a pragmatic solution - a tracked allocator that collects all dynamic allocations and frees them at program exit. Is this the proper way? No. Ideally, each structure would manage its own lifecycle. Does the OS free memory on exit anyway? Yes. So why bother? Clean habits, Valgrind silence. Also, this is a 3+ year old university project meant as an ability and basic compiler understanding showcase, not a prod grade thing - i just thought i cant leave it w/o anything so here it is.
+  <br><br>
+  <i>If you're a recruiter reading this - I'd rather spend time building something new than endlessly polishing old university code. But I don't like to leave broken things behind and felt like it should be addressed. I'm aware of other flaws as well, but I have decided against a full rewrite. My focus is on applying my current knowledge to new challenges, rather than maintaining projects that have already served their educational purpose.</i>
+</div>
+<br><br>
 
 ## How to run
 
-### Install Flex
+### Install
 ```bash
-sudo apt-get install flex
+sudo apt-get install flex bison nasm
+```
 
-```
-### Install Bison
-```bash
-sudo apt-get install bison
-```
-### Install NASM
-```bash
-sudo apt install nasm
-```
 
 ### Running compiler on txt file
 ```bash
@@ -101,17 +92,21 @@ for(int i = 0; i < 10; i++){
     //stuff
 }
 ```
+
 # Flow
-![compiler](https://github.com/user-attachments/assets/40374664-1914-4257-9e1c-54b77f07215a)
+```mermaid
+graph TD
+    A[<b>LEXER</b> <br> tokenization <br> <b>Flex</b>] -->|tokens| B[<b>PARSER</b><br>syntax rules <br> <b>Bison</b>]
+    B --> C[<b>SEMANTIC ANALYZER</b><br> type `n scope checks <br> <b>C</b>]
+    C --> D[<b>ASM GENERATO</b>R<br> x86-64 gen <br> <b>C</b>]
+    D -->|.asm| E((EXEC))
+    
+    style A fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    style B fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    style C fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    style D fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    style E fill:#c8e6c9,stroke:#388e3c,stroke-width:3px
+```
+
 # Assembly file
-All of the declared variables are known and saved in ram inside .section data int the assembly file
-
-![Screenshot from 2024-08-06 23-10-29](https://github.com/user-attachments/assets/fc0207ab-c45c-48c6-bd02-7d53cbc5b4f1)
-
-Asm code is divided by flows, starting from initial Flow _Start, each time the highstatement appears the new flow is created
-
-![Screenshot from 2024-08-06 22-52-50](https://github.com/user-attachments/assets/59e678b0-ff14-4c8e-99ca-d79a0c5d6b07)
-
-Lastly, after the flows, loops and higherstatements there are pre-written functions which are necessary for proper operations
-
-![Screenshot from 2024-08-06 22-53-29](https://github.com/user-attachments/assets/029049c2-17a2-4ab7-8a95-0b8c416fc77e)
+All of the declared variables are known and saved in ram inside .section data int the assembly file, asm is divided by flows, starting from initial _Start, each time the highstatement appears the new flow is created. After the flows, loops and higherstatements there are pre-written functions which are necessary for proper operations
