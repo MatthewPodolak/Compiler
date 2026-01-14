@@ -1,9 +1,10 @@
-%{
+{
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h> 
 #include "semantic_analizer.h"
 #include "assembly_generator.h"
+#include "memory_manager.h"
 #include <time.h>
 
 MathStack mathStack;
@@ -54,7 +55,7 @@ void createError(const char *error){
     if (errorCount < 200) {
         errorTable newError;
         newError.line = lineCounter;
-        newError.msg = strdup(error);
+        newError.msg = mem_strdup(error);
         errors[errorCount] = newError;
         errorCount++;
     } else {
@@ -364,7 +365,7 @@ forcondition:
             snprintf(errorMsg, sizeof(errorMsg), "Diffrent var name in for loop init. \n");
             createError(errorMsg);
     	}
-    	
+
     	//add condition.
     	ForCondition condition;
     	condition.name = $1;
@@ -379,7 +380,7 @@ forcondition:
             snprintf(errorMsg, sizeof(errorMsg), "Diffrent var name in for loop init. \n");
             createError(errorMsg);
     	}
-    	
+
     	ForCondition condition;
     	condition.name = $1;
     	condition.value = $3;
@@ -393,7 +394,7 @@ forcondition:
             snprintf(errorMsg, sizeof(errorMsg), "Diffrent var name in for loop init. \n");
             createError(errorMsg);
     	}
-    	
+
     	ForCondition condition;
     	condition.name = $1;
     	condition.value = $3;
@@ -407,7 +408,7 @@ forcondition:
             snprintf(errorMsg, sizeof(errorMsg), "Diffrent var name in for loop init. \n");
             createError(errorMsg);
     	}
-    	
+
     	ForCondition condition;
     	condition.name = $1;
     	condition.value = $3;
@@ -445,7 +446,7 @@ condition:
     VNAME EQ VNAME {
        VarType type = checkType($1);
        VarType typesecond = checkType($3);
-       
+
        if(type == nonExisting || typesecond == nonExisting || type == tableValue || typesecond == tableValue){
             char errorMsg[256];
             snprintf(errorMsg, sizeof(errorMsg), "Wrong type. \n");
@@ -457,7 +458,7 @@ condition:
                    nested++;
                    floorNum++;
                    nestedCounter++;
-          
+
                    const char *loopName = generateLoopName();
                    startIfHigher(highStatementIfTable,equal, $1, type ,$3, loopName);
                    createIfStatement(loopName);
@@ -488,12 +489,12 @@ condition:
             createError(errorMsg);
            }
        }
-       
+
     }
     | VNAME DIF VNAME {
        VarType type = checkType($1);
        VarType typesecond = checkType($3);
-       
+
        if(type == nonExisting || typesecond == nonExisting || type == tableValue || typesecond == tableValue){
             char errorMsg[256];
             snprintf(errorMsg, sizeof(errorMsg), "Wrong type. \n");
@@ -505,7 +506,7 @@ condition:
                    nested++;
                    floorNum++;
                    nestedCounter++;
-          
+
                    const char *loopName = generateLoopName();
                    startIfHigher(highStatementIfTable,diffrent, $1, type ,$3, loopName);
                    createIfStatement(loopName);
@@ -541,7 +542,7 @@ condition:
     | VNAME BIGGER VNAME {
        VarType type = checkType($1);
        VarType typesecond = checkType($3);
-       
+
        if(type == nonExisting || typesecond == nonExisting || type == tableValue || typesecond == tableValue || type == stringValue || typesecond == stringValue){
             char errorMsg[256];
             snprintf(errorMsg, sizeof(errorMsg), "Wrong type. \n");
@@ -553,7 +554,7 @@ condition:
                    nested++;
                    floorNum++;
                    nestedCounter++;
-          
+
                    const char *loopName = generateLoopName();
                    startIfHigher(highStatementIfTable,bigger, $1, type ,$3, loopName);
                    createIfStatement(loopName);
@@ -589,7 +590,7 @@ condition:
     | VNAME SMALLER VNAME {
        VarType type = checkType($1);
        VarType typesecond = checkType($3);
-       
+
        if(type == nonExisting || typesecond == nonExisting || type == tableValue || typesecond == tableValue || type == stringValue || typesecond == stringValue){
             char errorMsg[256];
             snprintf(errorMsg, sizeof(errorMsg), "Wrong type. \n");
@@ -601,7 +602,7 @@ condition:
                    nested++;
                    floorNum++;
                    nestedCounter++;
-          
+
                    const char *loopName = generateLoopName();
                    startIfHigher(highStatementIfTable,smaller, $1, type ,$3, loopName);
                    createIfStatement(loopName);
@@ -637,7 +638,7 @@ condition:
     | VNAME BEQ VNAME {
        VarType type = checkType($1);
        VarType typesecond = checkType($3);
-       
+
        if(type == nonExisting || typesecond == nonExisting || type == tableValue || typesecond == tableValue || type == stringValue || typesecond == stringValue){
             char errorMsg[256];
             snprintf(errorMsg, sizeof(errorMsg), "Wrong type. \n");
@@ -649,7 +650,7 @@ condition:
                    nested++;
                    floorNum++;
                    nestedCounter++;
-          
+
                    const char *loopName = generateLoopName();
                    startIfHigher(highStatementIfTable,equalOrBigger, $1, type ,$3, loopName);
                    createIfStatement(loopName);
@@ -685,7 +686,7 @@ condition:
     | VNAME SEQ VNAME {
        VarType type = checkType($1);
        VarType typesecond = checkType($3);
-       
+
        if(type == nonExisting || typesecond == nonExisting || type == tableValue || typesecond == tableValue || type == stringValue || typesecond == stringValue){
             char errorMsg[256];
             snprintf(errorMsg, sizeof(errorMsg), "Wrong type. \n");
@@ -697,7 +698,7 @@ condition:
                    nested++;
                    floorNum++;
                    nestedCounter++;
-          
+
                    const char *loopName = generateLoopName();
                    startIfHigher(highStatementIfTable,equalOrSmaller, $1, type ,$3, loopName);
                    createIfStatement(loopName);
@@ -956,7 +957,6 @@ declaration:
         }
     }
 ;
-
 arrayinitialization:
     factor { 
     	ArrayVariableSt stackN;
@@ -1013,7 +1013,6 @@ arrayinitialization:
         pushArrayValue(&arrayStack, stackN);
     }
 ;
-
 privateassignmentfor:
     VNAME ASSIGN expression {
        VarType type = checkType($1);
@@ -1120,7 +1119,6 @@ privateassignmentfor:
     	VarType type = checkType($1);
         VarType secondtype = checkType($3);
         if(type == nonExisting && secondtype == nonExisting){
-
         	PrivateVarMO private = privateCheck($1);
         	PrivateVarMO privatesec = privateCheck($3);
         	if(private.type == nonExisting && privatesec.type == nonExisting || private.type == nonExisting ||   privatesec.type == nonExisting){
@@ -1206,7 +1204,6 @@ privateassignmentfor:
         
     }
 ;
-
 privateassignment:
     VNAME ASSIGN expression { 
        VarType type = checkType($1);
@@ -1361,10 +1358,8 @@ privateassignment:
             	        createError(errorMsg);
         	}
         }
-
     }      
 ;
-
 assignment:
     VNAME ASSIGN expression {
         VarType type = checkType($1);
@@ -1582,16 +1577,15 @@ assignment:
     | VNAME DBRAL factor DBRAR ASSIGN doubleexpression {  }
     | VNAME DBRAL factor DBRAR ASSIGN stringexpression {  }
 ;
-
 mathematics:
     MATH BRAL mathexpression BRAR {
         //compute.        
         Stack *mStack = computeMathStack(&mathStack);
         Stack *currentFlowStack = getCurrentFlowStack(&flowTable);
         pushMathExpressionToCurrentFlowStack(mStack, currentFlowStack);
+        freeStack(mStack);
     }
 ;
-
 mathexpression:
     mathexpression ADD mathfactor {
         VarType type = checkType($3);
@@ -1639,63 +1633,55 @@ mathexpression:
         addInitialsToMathStack(&mathStack,$1, none);
     }
 ;
-
 mathfactor:
     VNAME { $$ = $1; }
 ;
-
 expression:
     expression ADD term { $$ = $1 + $3; }
     | expression SUB term { $$ = $1 - $3; }
     | term { $$ = $1; }
 ;
-
 doubleexpression:
     doubleexpression ADD doubleterm { $$ = $1 + $3; }
     | doubleexpression SUB doubleterm { $$ = $1 - $3; }
     | doubleterm { $$ = $1; }
 ;
-
 term:
     term MULT factor { $$ = $1 * $3; }
     | term DIV factor { $$ = $1 / $3; }
     | factor { $$ = $1; }
 ;
-
 doubleterm:
     doubleterm MULT doublefactor { $$ = $1 * $3; }
     | doubleterm DIV doublefactor { $$ = $1 / $3; }
     | doublefactor { $$ = $1; }
 ;
-
-
 factor:
     NUM { $$ = $1; }
     | SUB NUM { $$ = -$2; }
 ;
-
 doublefactor:
     DNUM { $$ = $1; }
     | SUB DNUM { $$ = -$2; }
 ;
-
 stringexpression:
     STRINGV { 
         normalizeString($1); 
         $$ = $1; 
     }
 ;
-
 %%
-
 void yyerror(const char *s) {
     fprintf(stderr, "Error: %s\n", s);
 }
-
 //Main
 int main(int argc, char **argv) {
     clock_t start, startAsm,startComp, end, endAsm, endComp;
     double cpu_time_used, cpu_time_usedAsm, cpu_time_usedComp;
+    int exit_code = 0;
+    
+    // Initialize memory tracker
+    mem_init();
     
     fprintf(stderr, "Compilation prcoess started...\n");
     start = clock();
@@ -1712,7 +1698,8 @@ int main(int argc, char **argv) {
         for(int i = 0; i < errorCount; i++){
             fprintf(stderr, "Error on line %d. %s \n",errors[i].line, errors[i].msg);
         }
-        return 1;
+        exit_code = 1;
+        goto cleanup;
     }
     end = clock();
     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
@@ -1723,7 +1710,8 @@ int main(int argc, char **argv) {
     file = fopen("assembly.asm", "w");
     if (file == NULL) {
             perror("Error creating file");
-            return 1;
+            exit_code = 1;
+            goto cleanup;
         }
         
     createSection(file, "data");
@@ -1747,20 +1735,23 @@ int main(int argc, char **argv) {
     fprintf(stderr ,"----------------------------------- \n");
     fclose(file);
     int res = system("nasm -f elf64 -o assembly.o assembly.asm");
-    if (res != 0) { fprintf(stderr, "Error compiling assembly file.\n"); return 1; }
+    if (res != 0) { fprintf(stderr, "Error compiling assembly file.\n"); exit_code = 1; goto cleanup; }
     
     res = system("ld -o assembly assembly.o");
-    if (res != 0) { fprintf(stderr, "Error compiling assembly file.\n"); return 1; }
+    if (res != 0) { fprintf(stderr, "Error compiling assembly file.\n"); exit_code = 1; goto cleanup; }
     
     res = system("./assembly");
-    if(res != 0) { fprintf(stderr, "Error compiling. \n"); return 1; }
+    if(res != 0) { fprintf(stderr, "Error compiling. \n"); exit_code = 1; goto cleanup; }
     startComp = clock();
     
     fprintf(stderr ,"----------------------------------- \n");
     endComp = clock();
     cpu_time_usedComp = ((double) (endComp - startComp)) / CLOCKS_PER_SEC;
     fprintf(stderr, "Compilation ended. Time: %f s\n", cpu_time_usedComp);
+cleanup:
+    // Free all allocated memory
+    cleanup_all();
+    yylex_destroy();
     
-    return 0;
+    return exit_code;
 }
-
